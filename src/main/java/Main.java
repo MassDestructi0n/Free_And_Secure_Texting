@@ -77,15 +77,26 @@ public class Main {
                 }
                 else
                     user.setRoom(room);
-                System.out.print(ANSI_BLUE+"Connecting .. ");
-                try{
-                    //making the connection to the server
-                    Thread.sleep(5000);
+                System.out.println(ANSI_BLUE+"Connecting .. ");
+//                try{
+//                    //making the connection to the server
+//                    Thread.sleep(5000);
+//                }
+//                catch (InterruptedException interruptedException){
+//                    System.out.println(interruptedException);
+//                }
+                ClientConnection clientConnection = new ClientConnection(user);
+                while (true){
+                    String message = scanner.nextLine();
+                    if(message.trim().equals("EXIT")){
+                        ClientConnection.setKeepRunning(false);
+                        choice = "EXIT";
+                        break;
+                    }
+                    ClientConnection.setMessageToSend(message+'\n');
+                    clientConnection.sendMessage();
                 }
-                catch (InterruptedException interruptedException){
-                    System.out.println(interruptedException);
-                }
-                System.out.println();
+                System.out.println(choice);
             }
         }
     }

@@ -12,7 +12,7 @@ public class ServerHost {
     public static final String ANSI_GREEN = "\u001B[32m";
     private static Map<String,SingleClient> clients;
     private  static  Runnable broadcastingRunnable;
-    private  Runnable addClientRunnable;
+    private  final Runnable addClientRunnable;
     private static volatile Socket clientSocket;
     private static volatile String broadcastingMessage;
     //volatile is JAVA keyword used for threads to make a member attribute to be shared among all threads
@@ -25,7 +25,7 @@ public class ServerHost {
     ServerHost(Integer port) {
         clients = new HashMap<String,SingleClient>();
         this.port = port;
-        ServerHost.broadcastingMessage = "";
+        ServerHost.setBroadcastingMessage("");
         this.serverListening = new Runnable() {
             @Override
             public void run() {
@@ -35,10 +35,11 @@ public class ServerHost {
                         try {
                             //TODO auth + encryption + decryption
 //                            serverSocket.setSoTimeout(5000);
-                             clientSocket = serverSocket.accept();
+                             ServerHost.setClientSocket(serverSocket.accept());
                             if (clients.isEmpty())
                                 Main.setLoadingThreadLoop(false);
                             Thread addClientThread = new Thread(addClientRunnable);
+                            addClientThread.setName("add-client-thread");
                             addClientThread.start();
                         } catch (IOException serverIOE) {
                             System.out.println(ANSI_RED + "IOE ERROR IN THREAD (serverListening) "
@@ -63,6 +64,7 @@ public class ServerHost {
                 for (String key : clients.keySet()) {
                     SingleClient singleClient = clients.get(key);
                     Thread clientThread = new Thread(singleClient.getSendToClient());
+                    clientThread.setName("client-send-thread-when-broadcasting");
                     clientThread.start();
                     try{
                         clientThread.join();
@@ -76,30 +78,41 @@ public class ServerHost {
         this.addClientRunnable = new Runnable() {
             @Override
             public void run() {
-                ServerHost.addClient(ServerHost.clientSocket);
+                ServerHost.addClient(ServerHost.getClientSocket());
             }
         };
         Thread serverThread = new Thread(this.getServerListening());
+        serverThread.setName("server-thread-to-listen");
         serverThread.start();
         System.out.println(ANSI_BLUE+"SERVER IS NOW LISTENING ON PORT "+this.getPort()+ANSI_BLUE);
         Thread loadingThread = new Thread(Main.getLoadingRunnable());
+        loadingThread.setName("loading-symbols");
         loadingThread.start();
     }
 
     public static void broadcast(String message) {
         Thread broadcastingThread = new Thread(ServerHost.getBroadcastingRunnable());
+        broadcastingThread.setName("broadcasting-thread");
         ServerHost.setBroadcastingMessage(message);
         broadcastingThread.start();
     }
 
-    public static String getBroadcastingMessage() {
+    public synchronized static String getBroadcastingMessage() {
         return broadcastingMessage;
     }
 
     public static void setBroadcastingMessage(String broadcastingMessage) {
         ServerHost.broadcastingMessage = broadcastingMessage;
     }
-
+    public static void endConnection(Socket clientSocket,User user){
+        clients.remove(clientSocket.getInetAddress().toString());
+        System.out.println(ANSI_BLUE+ user.getNickname()+
+                " LEFT THE SERVER"+ANSI_BLUE);
+        System.out.println(ANSI_BLUE+"Current server size : "+clients.size()+ANSI_BLUE);
+        System.out.println(ANSI_PURPLE +
+                "_____ _____ _____ _____ _____ _____ _____ _____ _____ \n" +
+                "\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\n");
+    }
     public static void addClient(Socket clientSocket) {
         System.out.println(ANSI_PURPLE +
                 "_____ _____ _____ _____ _____ _____ _____ _____ _____ \n" +
@@ -111,7 +124,7 @@ public class ServerHost {
 
     }
 
-    public String getCommand() {
+    public synchronized String getCommand() {
         return command;
     }
 
@@ -134,13 +147,12 @@ public class ServerHost {
     public Runnable getServerListening() {
         return serverListening;
     }
-    public static void endConnection(Socket clientSocket,User user){
-        clients.remove(clientSocket.getInetAddress().toString());
-        System.out.println(ANSI_BLUE+ user.getNickname()+
-                " LEFT THE SERVER"+ANSI_BLUE);
-        System.out.println(ANSI_BLUE+"Current server size : "+clients.size()+ANSI_BLUE);
-        System.out.println(ANSI_PURPLE +
-                "_____ _____ _____ _____ _____ _____ _____ _____ _____ \n" +
-                "\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\n");
+
+    public synchronized static Socket getClientSocket() {
+        return clientSocket;
+    }
+
+    public static void setClientSocket(Socket clientSocket) {
+        ServerHost.clientSocket = clientSocket;
     }
 }

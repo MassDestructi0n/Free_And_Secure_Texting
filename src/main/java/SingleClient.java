@@ -21,11 +21,11 @@ public class SingleClient {
     }
 
     public SingleClient(Socket clientSocket,Boolean isInitial) {
-        this.isInitial = isInitial;
-        this.clientSocket = clientSocket;
+        setInitial(isInitial);
+        setClientSocket(clientSocket);
         try {
-            clientSocketInputStream = new BufferedInputStream(clientSocket.getInputStream());
-            clientSocketOutputStream = new BufferedOutputStream(clientSocket.getOutputStream());
+            setClientSocketInputStream(new BufferedInputStream(clientSocket.getInputStream()));
+            setClientSocketOutputStream(new BufferedOutputStream(clientSocket.getOutputStream()));
             readFromClient = new Runnable() {
                 @Override
                 public void run() {
@@ -34,13 +34,13 @@ public class SingleClient {
                         int ascii;
                         String message = "";
                         try {
-                            while ((ascii = clientSocketInputStream.read()) != -1){
+                            while ((ascii = getClientSocketInputStream().read()) != -1){
                                 message += (char) ascii;
                                 if((char) ascii == '\n'){
                                     break;
                                 }
                             }
-                            if(isInitial){
+                            if(getInitial()){
                                 /*
                                 data received structure :
                                 'id':'123'\n
@@ -58,18 +58,18 @@ public class SingleClient {
                                     String lineKeyValue[] = line.split(":");
                                     //todo validation
                                     if(lineKeyValue.length != 2 || singleQuoteCounter != 4){
-                                        clientSocketOutputStream.write(("VALIDATION NOT PASSED IN INITIAL CONNECTION "+
+                                        getClientSocketOutputStream().write(("VALIDATION NOT PASSED IN INITIAL CONNECTION "+
                                                 "IN SingleClient").getBytes());
-                                        clientSocketOutputStream.flush();
+                                        getClientSocketOutputStream().flush();
                                         System.out.println(ANSI_RED+"VALIDATION NOT PASSED IN INITIAL CONNECTION "+
-                                                "IN SingleClient"+clientSocket.getInetAddress());
-                                        user.setNickname("UNKNOWN SPIRIT");
+                                                "IN SingleClient"+getClientSocket().getInetAddress());
+                                        getUser().setNickname("UNKNOWN SPIRIT");
                                         connectionStatus = false;
                                         break;
                                     }
                                     switch (lineKeyValue[0]){
                                         case "nickname": {
-                                            user.setNickname(lineKeyValue[1]);
+                                            getUser().setNickname(lineKeyValue[1]);
                                             break;
                                         }
                                         default:
@@ -78,17 +78,18 @@ public class SingleClient {
                                 }
                                 System.out.println(ANSI_BLUE+user.getNickname()+" JOINED THE SERVER "+ANSI_BLUE);
                                 if(!connectionStatus){
-                                    ServerHost.endConnection(clientSocket,user);
+                                    ServerHost.endConnection(getClientSocket(),getUser());
                                     endConnection();
                                 }
+                                 setInitial(false);
                                 break;
                             }
                             else if(getClientSocket().isClosed() || message.trim().equals("EXIT")){
                                 //todo add client ip address or someway to make the exiting message generic
                                 keepRunning = false;
-                                ServerHost.setBroadcastingMessage(message+'\n'+user.getNickname()+
+                                ServerHost.setBroadcastingMessage(message+'\n'+getUser().getNickname()+
                                         " LEFT THE SERVER");
-                                ServerHost.endConnection(clientSocket,user);
+                                ServerHost.endConnection(getClientSocket(),getUser());
                                 endConnection();
                             }
                             ServerHost.broadcast(message);
@@ -104,8 +105,8 @@ public class SingleClient {
                 public void run() {
                     //TODO encryption
                     try{
-                        clientSocketOutputStream.write((ServerHost.getBroadcastingMessage()+'\n').getBytes());
-                        clientSocketOutputStream.flush();
+                        getClientSocketOutputStream().write((ServerHost.getBroadcastingMessage()+'\n').getBytes());
+                        getClientSocketOutputStream().flush();
                     }
                     catch (IOException clientIOE){
                         System.out.println(ANSI_RED + "IOE ERROR IN THREAD (sendToClient) "
@@ -113,7 +114,8 @@ public class SingleClient {
                     }
                 }
             };
-            Thread initialReadingThread = new Thread(readFromClient);
+            Thread initialReadingThread = new Thread(getReadFromClient());
+            initialReadingThread.setName("initial-Reading");
             initialReadingThread.start();
             try {
                 initialReadingThread.join();
@@ -123,45 +125,14 @@ public class SingleClient {
                 System.out.println(ANSI_RED+"ERROR IN SingleClient CONSTRUCTOR  :"+interruptedException+ANSI_RED);
             }
             if(!clientSocket.isClosed()){
-                Thread readingThread = new Thread(readFromClient);
+                Thread readingThread = new Thread(getReadFromClient());
+                readingThread.setName("reading-thread");
                 readingThread.start();
             }
         } catch (IOException clientIOE) {
             System.out.println(ANSI_RED + "IOE ERROR IN THREAD RUNNING SingleClient CONSTRUCTOR WITH ID"
                     + Thread.currentThread().getId()+" "+clientIOE+ANSI_BLUE);
         }
-    }
-
-    public Socket getClientSocket() {
-        return clientSocket;
-    }
-
-    public void setClientSocket(Socket clientSocket) {
-        this.clientSocket = clientSocket;
-    }
-
-    public Runnable getReadFromClient() {
-        return readFromClient;
-    }
-
-    public Runnable getSendToClient() {
-        return sendToClient;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Boolean getInitial() {
-        return isInitial;
-    }
-
-    public void setInitial(Boolean initial) {
-        isInitial = initial;
     }
 
     public Boolean endConnection(){
@@ -178,5 +149,48 @@ public class SingleClient {
             ended = false;
         }
         return ended;
+    }
+    public synchronized Socket getClientSocket() {
+        return clientSocket;
+    }
+
+    public  void setClientSocket(Socket clientSocket) {
+        this.clientSocket = clientSocket;
+    }
+
+    public Runnable getReadFromClient() {
+        return readFromClient;
+    }
+
+    public Runnable getSendToClient() {
+        return sendToClient;
+    }
+
+    public synchronized User getUser() {
+        return user;
+    }
+
+    public synchronized Boolean getInitial() {
+        return isInitial;
+    }
+
+    public void setInitial(Boolean initial) {
+        this.isInitial = initial;
+    }
+
+    public synchronized BufferedInputStream getClientSocketInputStream() {
+        return clientSocketInputStream;
+    }
+
+    public void setClientSocketInputStream(BufferedInputStream clientSocketInputStream) {
+        this.clientSocketInputStream = clientSocketInputStream;
+    }
+
+    public synchronized BufferedOutputStream getClientSocketOutputStream() {
+        return clientSocketOutputStream;
+    }
+
+    public void setClientSocketOutputStream(BufferedOutputStream clientSocketOutputStream) {
+        this.clientSocketOutputStream = clientSocketOutputStream;
     }
 }
