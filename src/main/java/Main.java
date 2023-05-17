@@ -40,11 +40,15 @@ public class Main {
                 "/_/   /_/   \\___/\\___/  /_/  |_/_/ /_/\\__,_/   /____/\\___/\\___/\\__,_/_/   \\___/    /_/  \\___/_/|_|\\__/_/_/ /_/\\__, /  \n" +
                 "                                                                                                             /____/   ").reset());
         AnsiConsole.systemUninstall();
-        System.out.println(ANSI_BLUE + " -- Enter EXIT anytime to exit --");
-        System.out.println(ANSI_BLUE + "Enter your nickname :");
+        AnsiConsole.systemInstall();
+        System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(" -- Enter EXIT anytime to exit --").reset());
+        System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("Enter your nickname :").reset());
+
         Scanner scanner = new Scanner(System.in);
-        System.out.print(ANSI_PURPLE + ">> ");
+        System.out.print(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(">> "));
+        System.out.print(Ansi.ansi().fg(Ansi.Color.GREEN).a(""));
         User user = new User(scanner.nextLine());
+        AnsiConsole.systemUninstall();
         String choice = "";
         while (!choice.equals("EXIT")) {
             System.out.println(ANSI_BLUE + "please enter:\n1 : to create a chat room\n2 : to join existing chat room\n");
