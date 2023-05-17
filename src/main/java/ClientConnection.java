@@ -31,6 +31,8 @@ public class ClientConnection {
         Thread loadingThread = new Thread(Main.getLoadingRunnable());
         loadingThread.start();
         try{
+            System.out.println(roomDecrypted[0]);
+            System.out.println(Integer.parseInt(roomDecrypted[1]));
             setClientSocket(new Socket(roomDecrypted[0],Integer.parseInt(roomDecrypted[1])));
             getUser().setConnected(true);
         }catch (IOException ioSocketException){
