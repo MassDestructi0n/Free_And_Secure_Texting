@@ -1,5 +1,6 @@
 import java.util.Scanner;
-
+import org.fusesource.jansi.Ansi;
+import org.fusesource.jansi.AnsiConsole;
 public class Main {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
@@ -28,13 +29,17 @@ public class Main {
             }
         }
     };
+    //https://github.com/fusesource/jansi\
+
     public static void main(String[] args) {
-        System.out.println(ANSI_PURPLE + "    ______                  ___              __   _____                              ______          __  _            \n" +
+        AnsiConsole.systemInstall();
+        System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("    ______                  ___              __   _____                              ______          __  _            \n" +
                 "   / ____/_______  ___     /   |  ____  ____/ /  / ___/___  _______  __________     /_  __/__  _  __/ /_(_)___  ____ _\n" +
                 "  / /_  / ___/ _ \\/ _ \\   / /| | / __ \\/ __  /   \\__ \\/ _ \\/ ___/ / / / ___/ _ \\     / / / _ \\| |/_/ __/ / __ \\/ __ `/\n" +
                 " / __/ / /  /  __/  __/  / ___ |/ / / / /_/ /   ___/ /  __/ /__/ /_/ / /  /  __/    / / /  __/>  </ /_/ / / / / /_/ / \n" +
                 "/_/   /_/   \\___/\\___/  /_/  |_/_/ /_/\\__,_/   /____/\\___/\\___/\\__,_/_/   \\___/    /_/  \\___/_/|_|\\__/_/_/ /_/\\__, /  \n" +
-                "                                                                                                             /____/   ");
+                "                                                                                                             /____/   ").reset());
+        AnsiConsole.systemUninstall();
         System.out.println(ANSI_BLUE + " -- Enter EXIT anytime to exit --");
         System.out.println(ANSI_BLUE + "Enter your nickname :");
         Scanner scanner = new Scanner(System.in);
