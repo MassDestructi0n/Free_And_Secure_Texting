@@ -2,36 +2,47 @@ import java.util.Scanner;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.AnsiConsole;
 public class Main {
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_BLACK = "\u001B[30m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_PURPLE = "\u001B[35m";
-    public static final String ANSI_CYAN = "\u001B[36m";
-    public static final String ANSI_WHITE = "\u001B[37m";
-
     private static volatile boolean loadingThreadLoop = true;
+
+    public static String getChoice() {
+        return choice;
+    }
+
+    public static void setChoice(String choice) {
+        Main.choice = choice;
+    }
 
     private static final Runnable loadingRunnable = new Runnable() {
         @Override
         public void run() {
-            while (loadingThreadLoop) {
-                System.out.print("|" + ANSI_BLUE);
-                System.out.print("\b");
-                System.out.print("/" + ANSI_BLUE);
-                System.out.print("\b");
-                System.out.print("-" + ANSI_BLUE);
-                System.out.print("\b");
-                System.out.print("\\" + ANSI_BLUE);
-                System.out.print("\b");
+            while (loadingThreadLoop && !choice.equals("EXIT")) {
+                try {
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("|").reset());
+                    Thread.sleep(100);
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("\b").reset());
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("/").reset());
+                    Thread.sleep(100);
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("\b").reset());
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("-").reset());
+                    Thread.sleep(100);
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("\b").reset());
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("\\").reset());
+                    Thread.sleep(100);
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.BLUE).a("\b").reset());
+                }
+                catch (InterruptedException interruptedException){
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
+                            "ERROR WHILE WAITING IN LOADING "+interruptedException).reset());
+                    System.exit(500);
+                }
             }
         }
     };
     //https://github.com/fusesource/jansi\
+    private static volatile String choice = "";
 
     public static void main(String[] args) {
+
         AnsiConsole.systemInstall();
         System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("    ______                  ___              __   _____                              ______          __  _            \n" +
                 "   / ____/_______  ___     /   |  ____  ____/ /  / ___/___  _______  __________     /_  __/__  _  __/ /_(_)___  ____ _\n" +
@@ -39,75 +50,83 @@ public class Main {
                 " / __/ / /  /  __/  __/  / ___ |/ / / / /_/ /   ___/ /  __/ /__/ /_/ / /  /  __/    / / /  __/>  </ /_/ / / / / /_/ / \n" +
                 "/_/   /_/   \\___/\\___/  /_/  |_/_/ /_/\\__,_/   /____/\\___/\\___/\\__,_/_/   \\___/    /_/  \\___/_/|_|\\__/_/_/ /_/\\__, /  \n" +
                 "                                                                                                             /____/   ").reset());
-        AnsiConsole.systemUninstall();
-        AnsiConsole.systemInstall();
-        System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(" -- Enter EXIT anytime to exit --").reset());
+        System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(" -- Enter EXIT anytime to exit or ctrl+c--").reset());
         System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("Enter your nickname :").reset());
-
         Scanner scanner = new Scanner(System.in);
-        System.out.print(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(">> "));
+        System.out.print(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(">> ").reset());
         System.out.print(Ansi.ansi().fg(Ansi.Color.GREEN).a(""));
-        User user = new User(scanner.nextLine());
-        AnsiConsole.systemUninstall();
-        String choice = "";
+        choice = scanner.nextLine();
+        User user = new User(choice);
+        System.out.print(Ansi.ansi().fg(Ansi.Color.GREEN).a("").reset());
+        label:
         while (!choice.equals("EXIT")) {
-            System.out.println(ANSI_BLUE + "please enter:\n1 : to create a chat room\n2 : to join existing chat room\n");
-            System.out.print(ANSI_PURPLE + ">> ");
-            choice = scanner.nextLine().trim();
-            if (!choice.equals("1") && !choice.equals("2")) {
-                System.out.println(ANSI_RED + "(ERROR) PLEASE ENTER 1 OR 2 : ");
-                continue;
-            }
 
-            if (choice.equals("1")) {
-                //creating a room
-                System.out.print(ANSI_BLUE+"Creating a room .. ");
-                ServerHost serverHost = new ServerHost(5000);
-                String message = "";
-                while (true){
-                    message = scanner.nextLine();
-                    if(message.equals("EXIT")){
-                        choice = "EXIT";
-                        serverHost.setCommand("EXIT");
-                        break;
+            System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("please enter:\n1 : to create a chat room\n2 : to join existing chat room\n").reset());
+            System.out.print(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(">> ").reset());
+            System.out.print(Ansi.ansi().fg(Ansi.Color.GREEN).a(""));
+            choice = scanner.nextLine().trim();
+            System.out.print(Ansi.ansi().fg(Ansi.Color.GREEN).a("").reset());
+            String message = "";
+            switch (choice) {
+                case "EXIT":
+                    break label;
+                case "1":
+                    //creating a room
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("by default" +
+                            " port is : 5000 , ip is 127.0.0.1 , Creating a room .. ").reset());
+                    ServerHost serverHost = new ServerHost(5000);
+
+                    while (true) {
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.GREEN).a(""));
+                        message = scanner.nextLine();
+                        if (message.equals("EXIT")) {
+                            choice = "EXIT";
+                            serverHost.setCommand("EXIT");
+                            break;
+                        }
+                        System.out.println();
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.GREEN).a(
+                                "\b"+user.getNickname()+":"+message+"\n").reset());
+                        ServerHost.setBroadcastingMessage(user.getNickname()+":"+message+"\n");
+                        ServerHost.broadcast(ServerHost.getBroadcastingMessage());
                     }
-                    System.out.println(message);
-                }
-                System.out.println("END");
-                break;
-            } else {
-                //joining a room
-                System.out.println(ANSI_BLUE+"please enter room number :");
-                System.out.print(ANSI_PURPLE + ">> ");
-                String room = scanner.nextLine().trim();
-                if(room.equals("EXIT")){
-                    choice = "EXIT";
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("END").reset());
+                    break label;
+                case "2":
+                    //joining a room
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("please enter room number :").reset());
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(">> ").reset());
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.GREEN).a(""));
+                    String room = scanner.nextLine().trim();
+                    System.out.print(Ansi.ansi().fg(Ansi.Color.GREEN).a("").reset());
+                    if (room.equals("EXIT")) {
+                        choice = "EXIT";
+                        break label;
+                    } else
+                        user.setRoom(room);
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("Connecting .. ").reset());
+                    ClientConnection clientConnection = new ClientConnection(user);
+                    while (true) {
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.GREEN).a("\b"));
+                        message = scanner.nextLine();
+                        System.out.print(Ansi.ansi().fg(Ansi.Color.GREEN).a("").reset());
+                        if (message.trim().equals("EXIT")) {
+                            ClientConnection.setKeepRunning(false);
+                            choice = "EXIT";
+                            break;
+                        }
+                        ClientConnection.setMessageToSend(clientConnection.getUser().getNickname()
+                                +":"+message+ '\n');
+                        clientConnection.sendMessage();
+                    }
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(choice).reset());
                     break;
-                }
-                else
-                    user.setRoom(room);
-                System.out.println(ANSI_BLUE+"Connecting .. ");
-//                try{
-//                    //making the connection to the server
-//                    Thread.sleep(5000);
-//                }
-//                catch (InterruptedException interruptedException){
-//                    System.out.println(interruptedException);
-//                }
-                ClientConnection clientConnection = new ClientConnection(user);
-                while (true){
-                    String message = scanner.nextLine();
-                    if(message.trim().equals("EXIT")){
-                        ClientConnection.setKeepRunning(false);
-                        choice = "EXIT";
-                        break;
-                    }
-                    ClientConnection.setMessageToSend(message+'\n');
-                    clientConnection.sendMessage();
-                }
-                System.out.println(choice);
+                default:
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("(ERROR) PLEASE ENTER 1 OR 2 : ").reset());
+                    continue;
             }
         }
+        AnsiConsole.systemUninstall();
     }
 
     public static void setLoadingThreadLoop(boolean keepRunning) {
@@ -116,4 +135,6 @@ public class Main {
     public static Runnable getLoadingRunnable(){
         return loadingRunnable;
     }
+
+
 }

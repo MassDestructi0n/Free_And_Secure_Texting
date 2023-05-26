@@ -1,3 +1,5 @@
+import org.fusesource.jansi.Ansi;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -5,15 +7,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class ClientConnection {
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_BLACK = "\u001B[30m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_PURPLE = "\u001B[35m";
-    public static final String ANSI_CYAN = "\u001B[36m";
-    public static final String ANSI_WHITE = "\u001B[37m";
     private Runnable readingRunnable;
     private Runnable sendingRunnable;
     private volatile User user = new User();
@@ -31,13 +24,15 @@ public class ClientConnection {
         Thread loadingThread = new Thread(Main.getLoadingRunnable());
         loadingThread.start();
         try{
-            System.out.println(roomDecrypted[0]);
-            System.out.println(Integer.parseInt(roomDecrypted[1]));
+            System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("\bIP : "+roomDecrypted[0]).reset());
+            System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a("\bPORT : "+Integer.parseInt(roomDecrypted[1])).reset());
             setClientSocket(new Socket(roomDecrypted[0],Integer.parseInt(roomDecrypted[1])));
             getUser().setConnected(true);
         }catch (IOException ioSocketException){
-            System.out.println(ANSI_RED+"ERROR ROOM ENTERED CAN'T BE FOUND "+ioSocketException);
+            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
+                    "ERROR ROOM ENTERED CAN'T BE FOUND "+ioSocketException).reset());
             getUser().setConnected(false);
+            System.exit(500);
         }finally {
             Main.setLoadingThreadLoop(false);
         }
@@ -55,11 +50,22 @@ public class ClientConnection {
                             message += (char)ascii;
                         }
                     }catch (IOException readingException){
-                        System.out.println(ANSI_RED+"ERROR WHILE READING FROM SERVER "+readingException);
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
+                                "ERROR WHILE READING FROM SERVER "+readingException).reset());
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                                "MAYBE THE SERVER CLOSED CONNECTION ").reset());
                         setKeepRunning(false);
+                        System.exit(500);
                     }
                     //todo decryption of received message
-                    System.out.println(ANSI_BLUE+message);
+                    if(message.equals("")){
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                                "MAYBE THE SERVER CLOSED CONNECTION").reset());
+                        setKeepRunning(false);
+                        System.exit(500);
+                    }
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.YELLOW).a(message).reset());
+                    System.out.println();
                 }
             }
         };
@@ -68,29 +74,39 @@ public class ClientConnection {
             public void run() {
                 //todo encryption of the message
                 try{
-                    getClientSocketOutputStream().write((getUser().getNickname()+' '+getMessageToSend()).getBytes());
+                    getClientSocketOutputStream().write((getMessageToSend()).getBytes());
                     getClientSocketOutputStream().flush();
+                    setMessageToSend("");
                 }catch (IOException writeException){
-                    System.out.println(ANSI_RED+"ERROR WHILE WRITING ON SERVER "+writeException);
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
+                            "ERROR WHILE WRITING ON SERVER "+writeException).reset());
                 }
             }
         };
+        setMessageToSend("'nickname'"+":"
+                +"'"+getUser().getNickname()+"'\n");
+        Thread sendingThread = new Thread(sendingRunnable);
         Thread readingThread = new Thread(readingRunnable);
         readingThread.setName("reading-socket-client-thread");
         if(getUser().isConnected()){
             try{
                 clientSocketInputStream = new BufferedInputStream(getClientSocket().getInputStream());
             }catch (IOException inputStreamException){
-                System.out.println(ANSI_RED+"ERROR CLIENT SOCKET INPUT STREAM "+inputStreamException);
+                System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                        "ERROR CLIENT SOCKET INPUT STREAM "+inputStreamException).reset());
             }
             try{
                 clientSocketOutputStream = new BufferedOutputStream(getClientSocket().getOutputStream());
             }catch (IOException outputStreamException){
-                System.out.println(ANSI_RED+"ERROR CLIENT SOCKET OUTPUT STREAM "+outputStreamException);
+                System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                        "ERROR CLIENT SOCKET OUTPUT STREAM "+outputStreamException).reset());
             }
+            System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(
+                    " ** ** ** WELCOME! ** ** ** ").reset());
+            System.out.println(Ansi.ansi().fg(Ansi.Color.MAGENTA).a(
+                    "CONNECTION IS ESTABLISHED! YOU CAN SEND MESSAGES NOW").reset());
+            sendingThread.start();
             readingThread.start();
-            System.out.println(ANSI_PURPLE+" ** ** ** WELCOME! ** ** ** ");
-            System.out.println(ANSI_PURPLE+"CONNECTION IS ESTABLISHED! YOU CAN SEND MESSAGES NOW");
         }
     }
     public void sendMessage(){

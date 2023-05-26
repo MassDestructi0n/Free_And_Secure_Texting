@@ -1,3 +1,5 @@
+import org.fusesource.jansi.Ansi;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -5,11 +7,6 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class ServerHost {
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_PURPLE = "\u001B[35m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_GREEN = "\u001B[32m";
     private static Map<String,SingleClient> clients;
     private  static  Runnable broadcastingRunnable;
     private  final Runnable addClientRunnable;
@@ -42,8 +39,8 @@ public class ServerHost {
                             addClientThread.setName("add-client-thread");
                             addClientThread.start();
                         } catch (IOException serverIOE) {
-                            System.out.println(ANSI_RED + "IOE ERROR IN THREAD (serverListening) "
-                                    + serverIOE + " RETRYING");
+                            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("IOE ERROR IN THREAD (serverListening) "
+                                    + serverIOE + " RETRYING").reset());
                         }
                     }
                     for (String key : clients.keySet()) {
@@ -53,8 +50,9 @@ public class ServerHost {
                     serverSocket.close();
                     Main.setLoadingThreadLoop(false);
                 } catch (IOException serverIOE) {
-                    System.out.println(ANSI_RED + "IOE ERROR IN THREAD (serverListening)"
-                            + " " + serverIOE);
+                    System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("IOE ERROR IN THREAD (serverListening)"
+                            + " " + serverIOE).reset());
+                    System.exit(500);
                 }
             }
         };
@@ -69,7 +67,8 @@ public class ServerHost {
                     try{
                         clientThread.join();
                     }catch (InterruptedException interruptedException){
-                        System.out.println(ANSI_RED+interruptedException+ANSI_BLUE);
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
+                                interruptedException).reset());
                     }
                 }
                 ServerHost.setBroadcastingMessage("");
@@ -84,7 +83,8 @@ public class ServerHost {
         Thread serverThread = new Thread(this.getServerListening());
         serverThread.setName("server-thread-to-listen");
         serverThread.start();
-        System.out.println(ANSI_BLUE+"SERVER IS NOW LISTENING ON PORT "+this.getPort()+ANSI_BLUE);
+        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                "SERVER IS NOW LISTENING ON PORT "+this.getPort()).reset());
         Thread loadingThread = new Thread(Main.getLoadingRunnable());
         loadingThread.setName("loading-symbols");
         loadingThread.start();
@@ -106,22 +106,22 @@ public class ServerHost {
     }
     public static void endConnection(Socket clientSocket,User user){
         clients.remove(clientSocket.getInetAddress().toString());
-        System.out.println(ANSI_BLUE+ user.getNickname()+
-                " LEFT THE SERVER"+ANSI_BLUE);
-        System.out.println(ANSI_BLUE+"Current server size : "+clients.size()+ANSI_BLUE);
-        System.out.println(ANSI_PURPLE +
+        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                user.getNickname()+ " LEFT THE SERVER").reset());
+        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                "Current server size : "+clients.size()).reset());
+        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
                 "_____ _____ _____ _____ _____ _____ _____ _____ _____ \n" +
-                "\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\n");
+                "\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\n").reset());
     }
     public static void addClient(Socket clientSocket) {
-        System.out.println(ANSI_PURPLE +
+        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
                 "_____ _____ _____ _____ _____ _____ _____ _____ _____ \n" +
-                "\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\n");
-        SingleClient singleClient = new SingleClient();
+                "\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\n").reset());
+        SingleClient singleClient = new SingleClient(clientSocket,true);
         clients.put(clientSocket.getInetAddress().toString(),singleClient);
-        System.out.println(ANSI_BLUE+"Current server size : "+clients.size()+ANSI_BLUE);
-        singleClient = new SingleClient(clientSocket,true);
-
+        System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
+                "Current server size : "+clients.size()).reset());
     }
 
     public synchronized String getCommand() {

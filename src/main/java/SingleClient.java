@@ -1,13 +1,11 @@
+import org.fusesource.jansi.Ansi;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 public class SingleClient {
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_GREEN = "\u001B[32m";
     private  volatile BufferedInputStream clientSocketInputStream;
     private  volatile BufferedOutputStream clientSocketOutputStream;
     private volatile User user = new User();
@@ -16,9 +14,6 @@ public class SingleClient {
     private Runnable readFromClient;
     private Runnable sendToClient;
     private volatile Socket  clientSocket;
-    public SingleClient(){
-
-    }
 
     public SingleClient(Socket clientSocket,Boolean isInitial) {
         setInitial(isInitial);
@@ -61,22 +56,26 @@ public class SingleClient {
                                         getClientSocketOutputStream().write(("VALIDATION NOT PASSED IN INITIAL CONNECTION "+
                                                 "IN SingleClient").getBytes());
                                         getClientSocketOutputStream().flush();
-                                        System.out.println(ANSI_RED+"VALIDATION NOT PASSED IN INITIAL CONNECTION "+
-                                                "IN SingleClient"+getClientSocket().getInetAddress());
+                                        System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("VALIDATION NOT PASSED IN INITIAL CONNECTION "+
+
+                                                "IN SingleClient"+getClientSocket().getInetAddress()).reset());
                                         getUser().setNickname("UNKNOWN SPIRIT");
                                         connectionStatus = false;
                                         break;
                                     }
                                     switch (lineKeyValue[0]){
                                         case "nickname": {
-                                            getUser().setNickname(lineKeyValue[1]);
+                                            user.setNickname(lineKeyValue[1]);
                                             break;
                                         }
                                         default:
+                                            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
+                                                    "VALIDATION NOT PASSED IN INITIAL CONNECTION "+ "IN SingleClient"
+                                                            +getClientSocket().getInetAddress()).reset());
                                             break;
                                     }
                                 }
-                                System.out.println(ANSI_BLUE+user.getNickname()+" JOINED THE SERVER "+ANSI_BLUE);
+                                System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(user.getNickname()+" JOINED THE SERVER ").reset());
                                 if(!connectionStatus){
                                     ServerHost.endConnection(getClientSocket(),getUser());
                                     endConnection();
@@ -92,10 +91,13 @@ public class SingleClient {
                                 ServerHost.endConnection(getClientSocket(),getUser());
                                 endConnection();
                             }
+                            System.out.println();
+                            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(message).reset());
                             ServerHost.broadcast(message);
                         } catch (IOException clientIOE) {
-                            System.out.println(ANSI_RED + "IOE ERROR IN THREAD (readFromClient)"
-                                    + "MESSAGE IS " + message+" "+clientIOE+ANSI_BLUE);
+                            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("IOE ERROR IN THREAD (readFromClient)"
+                                    + "MESSAGE IS " + message+" "+clientIOE).reset());
+                            System.exit(500);
                         }
                     }
                 }
@@ -105,12 +107,13 @@ public class SingleClient {
                 public void run() {
                     //TODO encryption
                     try{
-                        getClientSocketOutputStream().write((ServerHost.getBroadcastingMessage()+'\n').getBytes());
+                        getClientSocketOutputStream().write((ServerHost.getBroadcastingMessage()).getBytes());
                         getClientSocketOutputStream().flush();
                     }
                     catch (IOException clientIOE){
-                        System.out.println(ANSI_RED + "IOE ERROR IN THREAD (sendToClient) "
-                                + "MESSAGE IS " + ServerHost.getBroadcastingMessage()+clientIOE+ANSI_BLUE);
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("IOE ERROR IN THREAD (sendToClient) "
+                                + "MESSAGE IS " + ServerHost.getBroadcastingMessage()+clientIOE).reset());
+                        System.exit(500);
                     }
                 }
             };
@@ -122,7 +125,8 @@ public class SingleClient {
                 setInitial(false);
             }
             catch (InterruptedException interruptedException){
-                System.out.println(ANSI_RED+"ERROR IN SingleClient CONSTRUCTOR  :"+interruptedException+ANSI_RED);
+                System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("ERROR IN SingleClient CONSTRUCTOR  :"+interruptedException).reset());
+                System.exit(500);
             }
             if(!clientSocket.isClosed()){
                 Thread readingThread = new Thread(getReadFromClient());
@@ -130,8 +134,9 @@ public class SingleClient {
                 readingThread.start();
             }
         } catch (IOException clientIOE) {
-            System.out.println(ANSI_RED + "IOE ERROR IN THREAD RUNNING SingleClient CONSTRUCTOR WITH ID"
-                    + Thread.currentThread().getId()+" "+clientIOE+ANSI_BLUE);
+            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(  "IOE ERROR IN THREAD RUNNING SingleClient CONSTRUCTOR WITH ID"
+                    + Thread.currentThread().getId()+" "+clientIOE).reset());
+            System.exit(500);
         }
     }
 
@@ -144,9 +149,10 @@ public class SingleClient {
             clientSocketOutputStream.close();
             ended = true;
         }catch (IOException clientIOE){
-            System.out.println(ANSI_RED + "IOE ERROR IN THREAD RUNNING SingleClient endConnection() WITH ID"
-                    + Thread.currentThread().getId()+" "+clientIOE+ANSI_BLUE);
+            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("IOE ERROR IN THREAD RUNNING SingleClient endConnection() WITH ID"
+                    + Thread.currentThread().getId()+" "+clientIOE).reset());
             ended = false;
+            System.exit(500);
         }
         return ended;
     }
