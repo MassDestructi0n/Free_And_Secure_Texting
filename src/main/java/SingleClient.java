@@ -1,9 +1,13 @@
 import org.fusesource.jansi.Ansi;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class SingleClient {
     private  volatile BufferedInputStream clientSocketInputStream;
@@ -28,13 +32,16 @@ public class SingleClient {
                     while (keepRunning) {
                         int ascii;
                         String message = "";
+
                         try {
                             while ((ascii = getClientSocketInputStream().read()) != -1){
-                                message += (char) ascii;
                                 if((char) ascii == '\n'){
                                     break;
                                 }
+                                message += (char) ascii;
                             }
+
+                            message = Main.decrypt(message,Main.stringToKey(Main.getUser().getSecretKey()));
                             if(getInitial()){
                                 /*
                                 data received structure :
@@ -87,17 +94,25 @@ public class SingleClient {
                                 //todo add client ip address or someway to make the exiting message generic
                                 keepRunning = false;
                                 ServerHost.setBroadcastingMessage(message+'\n'+getUser().getNickname()+
-                                        " LEFT THE SERVER");
+                                        " LEFT THE SERVER"+'\n');
                                 ServerHost.endConnection(getClientSocket(),getUser());
                                 endConnection();
                             }
-                            System.out.println();
-                            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(message).reset());
-                            ServerHost.broadcast(message);
+                            if(message.equals("")){
+                                ServerHost.endConnection(getClientSocket(),getUser());
+                                break;
+                            }
+
+                            System.out.println(Ansi.ansi().fg(Ansi.Color.YELLOW).a(message).reset());
+                            ServerHost.setBroadcastingMessage(message);
+                            ServerHost.broadcast();
                         } catch (IOException clientIOE) {
                             System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("IOE ERROR IN THREAD (readFromClient)"
                                     + "MESSAGE IS " + message+" "+clientIOE).reset());
                             System.exit(500);
+                        }
+                        catch (Exception e){
+                            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("ERROR WHILE DECRYPTING THE MESSAGE"+e));
                         }
                     }
                 }
@@ -107,7 +122,7 @@ public class SingleClient {
                 public void run() {
                     //TODO encryption
                     try{
-                        getClientSocketOutputStream().write((ServerHost.getBroadcastingMessage()).getBytes());
+                        getClientSocketOutputStream().write(ServerHost.getBroadcastingMessage().getBytes());
                         getClientSocketOutputStream().flush();
                     }
                     catch (IOException clientIOE){

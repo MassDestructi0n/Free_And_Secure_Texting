@@ -1,10 +1,9 @@
 import org.fusesource.jansi.Ansi;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
+
 
 public class ClientConnection {
     private Runnable readingRunnable;
@@ -49,34 +48,39 @@ public class ClientConnection {
                             }
                             message += (char)ascii;
                         }
-                    }catch (IOException readingException){
+                        message = Main.decrypt(message,Main.stringToKey(Main.getUser().getSecretKey()));
+                        System.out.println();
+                    }
+                    catch (IOException readingException){
                         System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
                                 "ERROR WHILE READING FROM SERVER "+readingException).reset());
                         System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
                                 "MAYBE THE SERVER CLOSED CONNECTION ").reset());
                         setKeepRunning(false);
                         System.exit(500);
+                    }catch (Exception e){
+                        System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("ERROR WHILE DECRYPTING THE MESSAGE"+e));
                     }
+
                     //todo decryption of received message
                     if(message.equals("")){
+
                         System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
                                 "MAYBE THE SERVER CLOSED CONNECTION").reset());
                         setKeepRunning(false);
                         System.exit(500);
                     }
+
                     System.out.println(Ansi.ansi().fg(Ansi.Color.YELLOW).a(message).reset());
-                    System.out.println();
                 }
             }
         };
         sendingRunnable = new Runnable() {
             @Override
             public void run() {
-                //todo encryption of the message
                 try{
-                    getClientSocketOutputStream().write((getMessageToSend()).getBytes());
+                    getClientSocketOutputStream().write(getMessageToSend().getBytes());
                     getClientSocketOutputStream().flush();
-                    setMessageToSend("");
                 }catch (IOException writeException){
                     System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a(
                             "ERROR WHILE WRITING ON SERVER "+writeException).reset());
@@ -148,6 +152,11 @@ public class ClientConnection {
     }
 
     public static void setMessageToSend(String messageToSend) {
-        ClientConnection.messageToSend = messageToSend;
+        try {
+            ClientConnection.messageToSend  = Main.encrypt(messageToSend,
+                    Main.stringToKey(Main.getUser().getSecretKey()))+'\n';
+        }catch (Exception e){
+            System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("ERROR WHILE ENCRYPTING THE MESSAGE"+e));
+        }
     }
 }

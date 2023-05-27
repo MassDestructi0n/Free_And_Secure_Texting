@@ -6,12 +6,14 @@ import java.net.Socket;
 import java.util.Map;
 import java.util.HashMap;
 
+
 public class ServerHost {
     private static Map<String,SingleClient> clients;
     private  static  Runnable broadcastingRunnable;
     private  final Runnable addClientRunnable;
     private static volatile Socket clientSocket;
-    private static volatile String broadcastingMessage;
+
+    private static volatile String broadcastingMessage = "";
     //volatile is JAVA keyword used for threads to make a member attribute to be shared among all threads
     // even when it's changed it will be changed everywhere (all threads)
     private final Runnable serverListening;
@@ -22,7 +24,6 @@ public class ServerHost {
     ServerHost(Integer port) {
         clients = new HashMap<String,SingleClient>();
         this.port = port;
-        ServerHost.setBroadcastingMessage("");
         this.serverListening = new Runnable() {
             @Override
             public void run() {
@@ -71,7 +72,6 @@ public class ServerHost {
                                 interruptedException).reset());
                     }
                 }
-                ServerHost.setBroadcastingMessage("");
             }
         };
         this.addClientRunnable = new Runnable() {
@@ -90,10 +90,9 @@ public class ServerHost {
         loadingThread.start();
     }
 
-    public static void broadcast(String message) {
+    public static void broadcast() {
         Thread broadcastingThread = new Thread(ServerHost.getBroadcastingRunnable());
         broadcastingThread.setName("broadcasting-thread");
-        ServerHost.setBroadcastingMessage(message);
         broadcastingThread.start();
     }
 
@@ -102,12 +101,25 @@ public class ServerHost {
     }
 
     public static void setBroadcastingMessage(String broadcastingMessage) {
-        ServerHost.broadcastingMessage = broadcastingMessage;
+        if(broadcastingMessage.equals(""))
+            ServerHost.broadcastingMessage = "";
+        else{
+            try {
+                ServerHost.broadcastingMessage = Main.encrypt(broadcastingMessage,
+                        Main.stringToKey(Main.getUser().getSecretKey()))+'\n';
+            }catch (Exception e){
+                System.out.println(Ansi.ansi().fg(Ansi.Color.RED).a("ERROR WHILE ENCRYPTING THE MESSAGE"+e));
+            }
+        }
     }
+
     public static void endConnection(Socket clientSocket,User user){
-        clients.remove(clientSocket.getInetAddress().toString());
+        clients.remove(user.getNickname()+clientSocket.getInetAddress().toString());
         System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
                 user.getNickname()+ " LEFT THE SERVER").reset());
+        setBroadcastingMessage("<><> "+user.getNickname()+" LEFT THE SERVER <><>"+
+                        "<><> Current server size : "+clients.size()+"<><>\n");
+        broadcast();
         System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
                 "Current server size : "+clients.size()).reset());
         System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
@@ -119,9 +131,13 @@ public class ServerHost {
                 "_____ _____ _____ _____ _____ _____ _____ _____ _____ \n" +
                 "\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\\____\\\n").reset());
         SingleClient singleClient = new SingleClient(clientSocket,true);
-        clients.put(clientSocket.getInetAddress().toString(),singleClient);
+        clients.put(singleClient.getUser().getNickname()+clientSocket.getInetAddress().toString(),singleClient);
         System.out.println(Ansi.ansi().fg(Ansi.Color.BLUE).a(
                 "Current server size : "+clients.size()).reset());
+        setBroadcastingMessage(
+                "<><> "+singleClient.getUser().getNickname()+" JOINED THE SERVER <><>"+
+                "<><> Current server size : "+clients.size()+"<><>\n");
+        broadcast();
     }
 
     public synchronized String getCommand() {

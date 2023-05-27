@@ -1,7 +1,11 @@
+import javax.crypto.SecretKey;
+
 public class User {
     private String nickname;
     private String room;
     private Boolean connected;
+
+    private String secretKey;
 
     public User(String nickname) {
         this.nickname = nickname;
@@ -30,5 +34,13 @@ public class User {
 
     public void setConnected(Boolean connected) {
         this.connected = connected;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 }
