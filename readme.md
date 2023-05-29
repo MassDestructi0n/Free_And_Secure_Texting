@@ -120,7 +120,7 @@ Make sure you have the following installed:
 # You can use it as a client or as a server.
 # as a start , you must pick a nickname whether you are a server or a client
 
-<img src=".images/start.png" alt="start" width="80" height="80">
+<img src="./images/start.png" alt="start" width="500" height="100">
 
 # then you choose to host a 'room' or to connect to an already hosted 'room'
 
