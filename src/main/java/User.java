@@ -4,7 +4,6 @@ public class User {
     private String nickname;
     private String room;
     private Boolean connected;
-
     private String secretKey;
 
     public User(String nickname) {
