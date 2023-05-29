@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <p align="center">
   <a href="https://github.com/AbidAbed/Free_And_Secure_Texting">
-    <img src="./images/logo.png" alt="Logo" width="80" height="80">
+    <img src="./images/logo.png" alt="Logo" width="1000" height="200">
   </a>
 
   <h3 align="center">Free And Secure Texting</h3>
