@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <p align="center">
   <a href="https://github.com/AbidAbed/Free_And_Secure_Texting">
-    <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/tree/master/images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/blob/master/images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">Free And Secure Texting</h3>
@@ -18,7 +18,6 @@
     ·
     <a href="https://github.com/AbidAbed/Free_And_Secure_Texting/feature">Request Feature</a>
   </p>
-</p>
 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
@@ -121,11 +120,11 @@ Make sure you have the following installed:
 # You can use it as a client or as a server.
 # as a start , you must pick a nickname whether you are a server or a client
 
-<img src="https://github.com/AbidAbed/Free_And_Secure_Texting/tree/master/images/start.png" alt="Logo" width="80" height="80">
+<img src="https://github.com/AbidAbed/Free_And_Secure_Texting/blob/master/images/start.png" alt="Logo" width="80" height="80">
 
 # then you choose to host a 'room' or to connect to an already hosted 'room'
 
-<img src="https://github.com/AbidAbed/Free_And_Secure_Texting/tree/master/images/paths_client_or_server.png" alt="Logo" width="80" height="80">
+<img src="https://github.com/AbidAbed/Free_And_Secure_Texting/blob/master/images/paths_client_or_server.png" alt="Logo" width="80" height="80">
 
 
 1. As a server :
@@ -135,18 +134,18 @@ Make sure you have the following installed:
   # , since the server listens to connections on that port only 
 
 
-  <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/images/server_path.png" alt="Logo" width="80" height="80">
+  <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/blob/master/images/server_path.png" alt="Logo" width="80" height="80">
 
   # after each connection or room joining , a message should appear to the server as the following :
 
-  <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/tree/master/images/server_after_a_join.png" alt="Logo" width="80" height="80">
+  <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/blob/master/images/server_after_a_join.png" alt="Logo" width="80" height="80">
   
 2. As a client : 
   # client should copy the SECRETKEY from the server , (which the server obtains it from the SECRETKEY.txt file after
   # starting to listen on port 5000) ,then the client should place the copied SECRETKEY into that file created before 
   # which is named "SECRETKEY.txt" , after that , hit enter in the console 
 
-   <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/tree/master/images/client_path.png" alt="Logo" width="80" height="80">
+   <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/blob/master/images/client_path.png" alt="Logo" width="80" height="80">
 
   # the client should enter the room number , which must follows the following : 
     -- ip:port
@@ -154,7 +153,7 @@ Make sure you have the following installed:
     -- domain:port
   # after that hit enter and you should join the room if the server is already up and running
 
-  <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/tree/master/images/client_after_a_join.png" alt="Logo" width="80" height="80">
+  <img src="https://github.com/AbidAbed/Free_And_Secure_Texting/blob/master/images/client_after_a_join.png" alt="Logo" width="80" height="80">
 
   # after a join you should receive the following message : 
   # "<><> "+YOUR-NICKNAME+" JOINED THE SERVER <><>"+"<><> Current server size : "+#-OF-CLIENTS-IN-THE-ROOM+"<><>\n"
