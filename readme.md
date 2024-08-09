@@ -187,6 +187,6 @@ Distributed under the MIT License. See LICENSE for more information.
 
 <!-- CONTACT -->
 ### Contact
-Abid Abed - telegram  : https://t.me/Hollyw0
+Abid Abed 
 
 Project Link: https://github.com/AbidAbed/Free_And_Secure_Texting
